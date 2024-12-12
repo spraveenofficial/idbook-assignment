@@ -6,3 +6,11 @@ export interface UserListType {
   role: string;
   avatar: string;
 }
+
+
+
+export interface CreateUserPayloadType {
+    first_name: string;
+    last_name: string;
+    email: string;
+}

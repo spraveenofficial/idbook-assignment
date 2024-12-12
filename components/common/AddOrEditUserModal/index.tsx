@@ -11,13 +11,22 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { addEmployeeSchema } from "./validations/user.validation";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useMutation } from "react-query";
+import { userServices } from "@/services/user.services";
+import { toast } from "sonner";
+import { useModal } from "@/contexts/modal-context";
+import { UserListType } from "@/types/user.types";
 
 type Props = {
   type: ModalContentEnum;
+  addUser?: (payload: UserListType) => void;
 };
 
 const ManageUserModal = (props: Props) => {
   const { type } = props;
+  const { closeModal } = useModal();
 
   const form = useForm<any>({
     defaultValues: {
@@ -25,8 +34,26 @@ const ManageUserModal = (props: Props) => {
       last_name: "",
       email: "",
     },
-    // resolver: yupResolver(addEmployeeSchema),
+    // resolver: zodResolver(addEmployeeSchema),
   });
+
+  const onSubmit: SubmitHandler<any> = async (data) => {
+    await mutate(data);
+  };
+
+  const { mutate, isLoading } = useMutation<any, any, any>(
+    (data) => userServices.createUser(data), // API call for creating leave
+    {
+      onSuccess: (data: UserListType) => {
+        props.addUser && props.addUser(data);
+        toast("User added successfully");
+        closeModal();
+      },
+      onError: (error) => {
+        toast("Failed to add user");
+      },
+    }
+  );
 
   return (
     <div className="w-full flex flex-col gap-4">
@@ -109,22 +136,22 @@ const ManageUserModal = (props: Props) => {
             </FormItem>
           )}
         />
+        <div className="flex justify-end w-full gap-2">
+          <Button
+            type="submit"
+            className="bg-primary hover:bg-primary-dark text-white"
+            onClick={form.handleSubmit(onSubmit)}
+          >
+            {type === ModalContentEnum.CREATE ? "Add User" : "Edit User"}
+          </Button>
+          <Button
+            className="bg-red-600 hover:bg-red-700 text-white"
+            onClick={() => {}}
+          >
+            Cancel
+          </Button>
+        </div>
       </Form>
-
-      <div className="flex justify-end w-full gap-2">
-        <Button
-          type="submit"
-          className="bg-primary hover:bg-primary-dark text-white"
-        >
-          {type === ModalContentEnum.CREATE ? "Add User" : "Edit User"}
-        </Button>
-        <Button
-          className="bg-red-600 hover:bg-red-700 text-white"
-          onClick={() => {}}
-        >
-          Cancel
-        </Button>
-      </div>
     </div>
   );
 };

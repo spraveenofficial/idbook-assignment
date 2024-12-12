@@ -8,7 +8,7 @@ import {
 } from "@/types/response.types";
 import { UserListType } from "@/types/user.types";
 import { AxiosError } from "axios";
-import { useQuery } from "react-query";
+import { useQuery, useQueryClient } from "react-query";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Fragment, useEffect, useState } from "react";
@@ -18,6 +18,8 @@ import ManageUserModal from "@/components/common/AddOrEditUserModal";
 import { ModalContentEnum } from "@/types/common.types";
 
 export default function Home() {
+  const queryClient = useQueryClient();
+  
   const { openModal, closeModal } = useModal();
   const [tableHeight, setTableHeight] = useState<string | number>("auto");
   const [currentPage, setCurrentPage] = useState(1);
@@ -28,7 +30,7 @@ export default function Home() {
   const { isLoading, isFetching, error, data } = useQuery<
     ApiBaseResponseType<UserListType[]>,
     AxiosError<AxiosErrorResponseType>
-  >(["officeData", currentPage], () => userServices.getUserList(currentPage), {
+  >(["userData", currentPage], () => userServices.getUserList(currentPage), {
     keepPreviousData: true,
     staleTime: 1000 * 60 * 5, // 5 minutes - data stays fresh
     cacheTime: 1000 * 60 * 10, // 10 minutes - data remains cached in memory
@@ -40,6 +42,26 @@ export default function Home() {
   });
 
   const userData: UserListType[] = data?.data || [];
+
+
+  const addNewUser = (newUser: UserListType) => {
+    queryClient.setQueryData<ApiBaseResponseType<UserListType[]>>(
+      ["userData", currentPage],
+      (oldData: any) => {
+        console.log("oldData", oldData);
+        if (!oldData) return null;
+
+        // Update the results array
+        const updatedResults = [newUser, ...oldData.data];
+
+        // Return the updated data structure
+        return {
+          ...oldData,
+          data: updatedResults,
+        };
+      },
+    );
+  }
 
   useEffect(() => {
     const handleResize = () => {
@@ -55,7 +77,7 @@ export default function Home() {
   }, []);
 
   const handleOpenAddUserModal = () => {
-    openModal(<ManageUserModal type={ModalContentEnum.CREATE} />);
+    openModal(<ManageUserModal type={ModalContentEnum.CREATE} addUser={addNewUser} />);
   };
 
   return (
