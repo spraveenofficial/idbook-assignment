@@ -70,7 +70,7 @@ export default function UserTable({ data }: UserTableProps) {
       size: 100, // Width for "Total"
     },
     {
-      accessorKey: "role",
+      accessorKey: "actions",
       header: "Action",
       cell: ({ row }) => (
         <DropdownMenu>

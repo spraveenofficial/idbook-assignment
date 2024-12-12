@@ -76,3 +76,8 @@ body {
     @apply bg-background text-foreground;
   }
 }
+
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none; /* Hides scrollbar in Chrome, Safari, and other WebKit browsers */
+}
