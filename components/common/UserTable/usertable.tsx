@@ -1,5 +1,6 @@
 "use client";
 
+import { CreditCard, EllipsisVertical, Trash } from "lucide-react";
 import React, { useState } from "react";
 import {
   useReactTable,
@@ -18,6 +19,16 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuGroup,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuShortcut,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { UserListType } from "@/types/user.types";
 
 type UserTableProps = {
@@ -25,44 +36,20 @@ type UserTableProps = {
 };
 
 export default function UserTable({ data }: UserTableProps) {
-
   const columns: ColumnDef<UserListType>[] = [
     {
       accessorKey: "id",
-      header: ({ table }) => (
-        <div className="flex items-center">
-          <input
-            type="checkbox"
-            ref={(ref) => {
-              if (ref) {
-                ref.indeterminate =
-                  table.getIsSomeRowsSelected() &&
-                  !table.getIsAllRowsSelected();
-              }
-            }}
-            checked={table.getIsAllRowsSelected()}
-            onChange={table.getToggleAllRowsSelectedHandler()}
-            className="mr-4" // Margin for spacing
-          />
-          Id
-        </div>
-      ),
+      header: ({ table }) => <div className="flex items-center ml-4">Id</div>,
       cell: ({ row }) => (
         <div className="flex items-center">
-          <input
-            type="checkbox"
-            checked={row.getIsSelected()}
-            onChange={row.getToggleSelectedHandler()}
-            className="mr-4" // Margin for spacing
-          />
-          <div className="flex justify-center items-center gap-3">
+          <div className="flex justify-center items-center ml-4">
             <div className="flex-col gap-1">
               <h3>{row.original.id}</h3>
             </div>
           </div>
         </div>
       ),
-      size: 100,
+      size: 50,
     },
     {
       accessorKey: "name",
@@ -79,15 +66,44 @@ export default function UserTable({ data }: UserTableProps) {
     {
       accessorKey: "role",
       header: "Role",
-      cell: ({ row }) => row.original.role,
+      cell: ({ row }) => row.original.role ?? "N/A",
       size: 100, // Width for "Total"
+    },
+    {
+      accessorKey: "role",
+      header: "Action",
+      cell: ({ row }) => (
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <EllipsisVertical className="h-5 w-5 cursor-pointer" />
+          </DropdownMenuTrigger>
+          <DropdownMenuContent className="w-56 dark:bg-darkBg bg-white border-grey border-[0.5px] text-black dark:text-white font-manrope">
+            <DropdownMenuLabel className="border-b-grey border-b pb-3">
+              User Actions
+            </DropdownMenuLabel>
+            <DropdownMenuGroup className="font-sans">
+              <DropdownMenuItem className="hover:opacity-80 cursor-pointer">
+                <CreditCard className="mr-2 h-4 w-4" />
+                <span>Edit</span>
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem className="text-red-600 hover:opacity-80 cursor-pointer">
+                <Trash className="mr-2 h-4 w-4" />
+                Delete
+                <DropdownMenuShortcut>⌘⌫</DropdownMenuShortcut>
+              </DropdownMenuItem>
+            </DropdownMenuGroup>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      ),
+      size: 20, // Width for "Total"
     },
   ];
 
   const [sorting, setSorting] = useState<SortingState>([]);
 
   const table = useReactTable({
-    data: data,
+    data,
     columns,
     state: {
       sorting,
