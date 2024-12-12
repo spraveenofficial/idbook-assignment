@@ -20,10 +20,15 @@ import {
 } from "@/components/ui/table";
 import { UserListType } from "@/types/user.types";
 
-export default function UserTable() {
+type UserTableProps = {
+  data: UserListType[];
+};
+
+export default function UserTable({ data }: UserTableProps) {
+
   const columns: ColumnDef<UserListType>[] = [
     {
-      accessorKey: "name",
+      accessorKey: "id",
       header: ({ table }) => (
         <div className="flex items-center">
           <input
@@ -52,18 +57,18 @@ export default function UserTable() {
           />
           <div className="flex justify-center items-center gap-3">
             <div className="flex-col gap-1">
-              <h3>{row.original.first_name}</h3>
+              <h3>{row.original.id}</h3>
             </div>
           </div>
         </div>
       ),
-      size: 100, // Set a width for the Employee Name column
+      size: 100,
     },
     {
       accessorKey: "name",
       header: "Name",
       cell: ({ row }) => row.original.first_name + " " + row.original.last_name,
-      size: 180
+      size: 180,
     },
     {
       accessorKey: "email",
@@ -82,7 +87,7 @@ export default function UserTable() {
   const [sorting, setSorting] = useState<SortingState>([]);
 
   const table = useReactTable({
-    data: [],
+    data: data,
     columns,
     state: {
       sorting,
@@ -135,7 +140,7 @@ export default function UserTable() {
               {row.getVisibleCells().map((cell) => (
                 <TableCell
                   key={cell.id}
-                  className={`text-white text-[12px] font-medium border-b-[1px] border-[#323B49] ${
+                  className={`text-black text-[12px] font-medium border-b-[1px] border-[#323B49] ${
                     rowIndex === 0 ? "border-t-0" : ""
                   }`}
                   style={{

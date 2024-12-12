@@ -5,7 +5,9 @@ import axios, { AxiosInstance } from "axios";
 const axiosInstance: AxiosInstance = axios.create({
   baseURL: "https://reqres.in/api",
   timeout: 10000,
-  withCredentials: true,
+  headers: {
+    "Content-Type": "application/json",
+  },
 });
 
 
