@@ -58,10 +58,30 @@ export default function Home() {
         return {
           ...oldData,
           data: updatedResults,
+          total: oldData.total + 1,
         };
       },
     );
   }
+
+  const deleteUserByUserId = (userId: string) => {
+    queryClient.setQueryData<ApiBaseResponseType<UserListType[]>>(
+      ["userData", currentPage],
+      (oldData: any) => {
+        if (!oldData) return null;
+
+        // Update the results array
+        const updatedResults = oldData.data.filter((user: UserListType) => user.id.toString() !== userId.toString());
+
+        // Return the updated data structure
+        return {
+          ...oldData,
+          data: updatedResults,
+          total: oldData.total - 1,
+        };
+      },
+    );
+  };
 
   useEffect(() => {
     const handleResize = () => {
@@ -80,6 +100,9 @@ export default function Home() {
     openModal(<ManageUserModal type={ModalContentEnum.CREATE} addUser={addNewUser} />);
   };
 
+  const handleOpenEditUserModal = (userObj: UserListType) => {
+    openModal(<ManageUserModal type={ModalContentEnum.EDIT} userObj={userObj} />);
+  };
   return (
     <div className="m-4 overflow-hidden">
       <div className="flex justify-end gap-2">
@@ -94,14 +117,14 @@ export default function Home() {
       {!isLoading && userData?.length > 0 && (
         <Fragment>
           <div className="overflow-hidden" style={{ height: tableHeight }}>
-            <UserTable data={userData} />
+            <UserTable data={userData} deleteUser={deleteUserByUserId} handleEdit={handleOpenEditUserModal} />
           </div>
           <Pagination
             totalPages={data?.total_pages as number}
             currentPage={data?.page as number}
             setCurrentPage={setCurrentPage}
             totalData={totalData}
-            limit={limit}
+            limit={data?.data.length as number}
             setLimit={setLimit}
           />
         </Fragment>

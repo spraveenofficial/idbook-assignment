@@ -30,12 +30,34 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { UserListType } from "@/types/user.types";
+import { useMutation } from "react-query";
+import { userServices } from "@/services/user.services";
+import { toast } from "sonner";
 
 type UserTableProps = {
   data: UserListType[];
+  deleteUser?: (userId: string) => void;
+  handleEdit?: (userObj: UserListType) => void;
 };
 
-export default function UserTable({ data }: UserTableProps) {
+export default function UserTable({ data, deleteUser, handleEdit }: UserTableProps) {
+  const { mutate } = useMutation<any, any, any>(
+    (payload) => userServices.deleteUser(payload), // API call for creating leave
+    {
+      onSuccess: (_, variable) => {
+        deleteUser && deleteUser(variable);
+        toast("User Deleted successfully");
+      },
+      onError: (error) => {
+        toast("Failed to delete user");
+      },
+    }
+  );
+
+  const handleDelete = async (userId: string) => {
+    await mutate(userId);
+  };
+
   const columns: ColumnDef<UserListType>[] = [
     {
       accessorKey: "id",
@@ -50,18 +72,21 @@ export default function UserTable({ data }: UserTableProps) {
         </div>
       ),
       size: 50,
+      enableSorting: true,
     },
     {
       accessorKey: "name",
       header: "Name",
       cell: ({ row }) => row.original.first_name + " " + row.original.last_name,
       size: 180,
+      enableSorting: true,
     },
     {
       accessorKey: "email",
       header: "Email",
       cell: ({ row }) => row.original.email,
       size: 180,
+      enableSorting: true,
     },
     {
       accessorKey: "role",
@@ -81,13 +106,20 @@ export default function UserTable({ data }: UserTableProps) {
             <DropdownMenuLabel className="border-b-grey border-b pb-3">
               User Actions
             </DropdownMenuLabel>
-            <DropdownMenuGroup className="font-sans">
+            <DropdownMenuGroup onClick={() => {
+                handleEdit && handleEdit(row.original);
+            }} className="font-sans">
               <DropdownMenuItem className="hover:opacity-80 cursor-pointer">
                 <CreditCard className="mr-2 h-4 w-4" />
                 <span>Edit</span>
               </DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem className="text-red-600 hover:opacity-80 cursor-pointer">
+              <DropdownMenuItem
+                onClick={() => {
+                  handleDelete(row.original.id);
+                }}
+                className="text-red-600 hover:opacity-80 cursor-pointer"
+              >
                 <Trash className="mr-2 h-4 w-4" />
                 Delete
                 <DropdownMenuShortcut>⌘⌫</DropdownMenuShortcut>

@@ -22,19 +22,17 @@ import { UserListType } from "@/types/user.types";
 type Props = {
   type: ModalContentEnum;
   addUser?: (payload: UserListType) => void;
+  userObj?: UserListType;
 };
 
 const ManageUserModal = (props: Props) => {
   const { type } = props;
   const { closeModal } = useModal();
 
+  const defaultValues = type === ModalContentEnum.EDIT ? props.userObj : {};
   const form = useForm<any>({
-    defaultValues: {
-      first_name: "",
-      last_name: "",
-      email: "",
-    },
-    // resolver: zodResolver(addEmployeeSchema),
+    defaultValues: defaultValues,
+    resolver: zodResolver(addEmployeeSchema),
   });
 
   const onSubmit: SubmitHandler<any> = async (data) => {
