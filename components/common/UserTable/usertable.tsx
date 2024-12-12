@@ -52,7 +52,7 @@ export default function UserTable() {
           />
           <div className="flex justify-center items-center gap-3">
             <div className="flex-col gap-1">
-              <h3>{row.original.name}</h3>
+              <h3>{row.original.first_name}</h3>
             </div>
           </div>
         </div>
@@ -62,7 +62,7 @@ export default function UserTable() {
     {
       accessorKey: "name",
       header: "Name",
-      cell: ({ row }) => row.original.name,
+      cell: ({ row }) => row.original.first_name + " " + row.original.last_name,
       size: 180
     },
     {
