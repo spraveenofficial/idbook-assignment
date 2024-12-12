@@ -1,6 +1,6 @@
 "use client";
 
-
+import { ModalProvider } from "@/contexts/modal-context";
 import { QueryClient, QueryClientProvider } from "react-query";
 
 interface ProvidersProps {
@@ -20,7 +20,7 @@ const queryClient = new QueryClient({
 export default function Providers(props: ProvidersProps) {
   return (
     <QueryClientProvider client={queryClient}>
-      {props.children}
+      <ModalProvider>{props.children}</ModalProvider>
     </QueryClientProvider>
   );
 }
