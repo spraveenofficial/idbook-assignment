@@ -38,9 +38,10 @@ type UserTableProps = {
   data: UserListType[];
   deleteUser?: (userId: string) => void;
   handleEdit?: (userObj: UserListType) => void;
+  isLoading?: boolean;
 };
 
-export default function UserTable({ data, deleteUser, handleEdit }: UserTableProps) {
+export default function UserTable({ data, deleteUser, handleEdit, isLoading }: UserTableProps) {
   const { mutate } = useMutation<any, any, any>(
     (payload) => userServices.deleteUser(payload), // API call for creating leave
     {
@@ -183,6 +184,17 @@ export default function UserTable({ data, deleteUser, handleEdit }: UserTablePro
           ))}
         </TableHeader>
         <TableBody className="border-0">
+          {/* Check if data length is zero */}
+          {!isLoading && data.length === 0 && (
+            <TableRow>
+              <TableCell
+                className="text-black text-[12px] font-medium border-b-[1px] border-[#323B49]"
+                colSpan={columns.length}
+              >
+                No data found
+              </TableCell>
+            </TableRow>
+          )}
           {table.getRowModel().rows.map((row, rowIndex) => (
             <TableRow key={row.id}>
               {row.getVisibleCells().map((cell) => (

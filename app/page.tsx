@@ -39,7 +39,6 @@ export default function Home() {
 
   const userData: UserListType[] = data?.data || [];
 
-
   const addNewUser = (newUser: UserListType) => {
     queryClient.setQueryData<ApiBaseResponseType<UserListType[]>>(
       ["userData", currentPage],
@@ -56,9 +55,9 @@ export default function Home() {
           data: updatedResults,
           total: oldData.total + 1,
         };
-      },
+      }
     );
-  }
+  };
 
   const deleteUserByUserId = (userId: string) => {
     queryClient.setQueryData<ApiBaseResponseType<UserListType[]>>(
@@ -67,7 +66,9 @@ export default function Home() {
         if (!oldData) return null;
 
         // Update the results array
-        const updatedResults = oldData.data.filter((user: UserListType) => user.id.toString() !== userId.toString());
+        const updatedResults = oldData.data.filter(
+          (user: UserListType) => user.id.toString() !== userId.toString()
+        );
 
         // Return the updated data structure
         return {
@@ -75,7 +76,7 @@ export default function Home() {
           data: updatedResults,
           total: oldData.total - 1,
         };
-      },
+      }
     );
   };
 
@@ -98,9 +99,9 @@ export default function Home() {
           ...oldData,
           data: updatedResults,
         };
-      },
+      }
     );
-  }
+  };
 
   useEffect(() => {
     const handleResize = () => {
@@ -116,11 +117,19 @@ export default function Home() {
   }, []);
 
   const handleOpenAddUserModal = () => {
-    openModal(<ManageUserModal type={ModalContentEnum.CREATE} addUser={addNewUser} />);
+    openModal(
+      <ManageUserModal type={ModalContentEnum.CREATE} addUser={addNewUser} />
+    );
   };
 
   const handleOpenEditUserModal = (userObj: UserListType) => {
-    openModal(<ManageUserModal type={ModalContentEnum.EDIT} userObj={userObj} editUser={editUser} />);
+    openModal(
+      <ManageUserModal
+        type={ModalContentEnum.EDIT}
+        userObj={userObj}
+        editUser={editUser}
+      />
+    );
   };
 
   useEffect(() => {
@@ -129,27 +138,32 @@ export default function Home() {
 
     const searchResults = userData.filter((user) => {
       const fullName = `${user.first_name} ${user.last_name}`.toLowerCase();
-      return fullName.includes(searchQuery.toLowerCase()) || user.email.includes(searchQuery.toLowerCase());
+      return (
+        fullName.includes(searchQuery.toLowerCase()) ||
+        user.email.includes(searchQuery.toLowerCase())
+      );
     });
 
-    queryClient.setQueryData<ApiBaseResponseType<UserListType[]>>(["userData", currentPage], (oldData: any) => {
-      if (!oldData) return null;
+    queryClient.setQueryData<ApiBaseResponseType<UserListType[]>>(
+      ["userData", currentPage],
+      (oldData: any) => {
+        if (!oldData) return null;
 
-      return {
-        ...oldData,
-        data: searchResults,
-        total: searchResults.length,
-      };
-    });
-
+        return {
+          ...oldData,
+          data: searchResults,
+          total: searchResults.length,
+        };
+      }
+    );
   }, [searchQuery]);
 
   const handleTypeSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if(e.target.value === ""){
+    if (e.target.value === "") {
       refetch();
     }
     setSearchQuery(e.target.value);
-  }
+  };
 
   return (
     <div className="m-4 overflow-hidden">
@@ -163,19 +177,22 @@ export default function Home() {
         <Button onClick={handleOpenAddUserModal}>Add New User</Button>
       </div>
 
+      <div className="overflow-hidden" style={{ height: tableHeight }}>
+        <UserTable
+          data={userData}
+          deleteUser={deleteUserByUserId}
+          handleEdit={handleOpenEditUserModal}
+          isLoading={isLoading || isFetching}
+        />
+      </div>
       {!isLoading && userData?.length > 0 && (
-        <Fragment>
-          <div className="overflow-hidden" style={{ height: tableHeight }}>
-            <UserTable data={userData} deleteUser={deleteUserByUserId} handleEdit={handleOpenEditUserModal} />
-          </div>
-          <Pagination
-            totalPages={data?.total_pages as number}
-            currentPage={data?.page as number}
-            setCurrentPage={setCurrentPage}
-            totalData={totalData}
-            limit={data?.data.length as number}
-          />
-        </Fragment>
+        <Pagination
+          totalPages={data?.total_pages as number}
+          currentPage={data?.page as number}
+          setCurrentPage={setCurrentPage}
+          totalData={totalData}
+          limit={data?.data.length as number}
+        />
       )}
     </div>
   );
