@@ -6,7 +6,7 @@ interface PaginationProps {
   currentPage: number;
   totalData: number;
   limit: number;
-  setLimit: React.Dispatch<React.SetStateAction<number>>;
+  setLimit?: React.Dispatch<React.SetStateAction<number>>;
 }
 
 const Pagination: React.FC<PaginationProps> = ({
@@ -33,7 +33,7 @@ const Pagination: React.FC<PaginationProps> = ({
   const handleNext = () =>
     currentPage < totalPages && setCurrentPage(currentPage + 1);
   const handleBack = () => currentPage > 1 && setCurrentPage(currentPage - 1);
-  const handleLimit = (e: any) => setLimit(e.target.value);
+//   const handleLimit = (e: any) => setLimit && setLimit(e.target.value);
 
   return (
     <div className="flex justify-between px-4 py-2 w-full">

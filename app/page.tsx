@@ -19,15 +19,13 @@ import { ModalContentEnum } from "@/types/common.types";
 
 export default function Home() {
   const queryClient = useQueryClient();
-  
-  const { openModal, closeModal } = useModal();
+  const [searchQuery, setSearchQuery] = useState<string>("");
+  const { openModal } = useModal();
   const [tableHeight, setTableHeight] = useState<string | number>("auto");
   const [currentPage, setCurrentPage] = useState(1);
   const [totalData, setTotalData] = useState<number>(0);
-  const [limit, setLimit] = useState(5);
-  const [totalPages, setTotalPages] = useState(1);
 
-  const { isLoading, isFetching, error, data } = useQuery<
+  const { isLoading, isFetching, error, data, refetch } = useQuery<
     ApiBaseResponseType<UserListType[]>,
     AxiosError<AxiosErrorResponseType>
   >(["userData", currentPage], () => userServices.getUserList(currentPage), {
@@ -35,9 +33,7 @@ export default function Home() {
     staleTime: 1000 * 60 * 5, // 5 minutes - data stays fresh
     cacheTime: 1000 * 60 * 10, // 10 minutes - data remains cached in memory
     onSuccess(data) {
-      setTotalPages(data.total_pages);
       setTotalData(data.total);
-      setLimit(data.per_page);
     },
   });
 
@@ -83,6 +79,29 @@ export default function Home() {
     );
   };
 
+  const editUser = (editedUser: UserListType) => {
+    queryClient.setQueryData<ApiBaseResponseType<UserListType[]>>(
+      ["userData", currentPage],
+      (oldData: any) => {
+        if (!oldData) return null;
+
+        // Update the results array
+        const updatedResults = oldData.data.map((user: UserListType) => {
+          if (user.id.toString() === editedUser.id.toString()) {
+            return editedUser;
+          }
+          return user;
+        });
+
+        // Return the updated data structure
+        return {
+          ...oldData,
+          data: updatedResults,
+        };
+      },
+    );
+  }
+
   useEffect(() => {
     const handleResize = () => {
       const paginationHeight = 70;
@@ -101,8 +120,37 @@ export default function Home() {
   };
 
   const handleOpenEditUserModal = (userObj: UserListType) => {
-    openModal(<ManageUserModal type={ModalContentEnum.EDIT} userObj={userObj} />);
+    openModal(<ManageUserModal type={ModalContentEnum.EDIT} userObj={userObj} editUser={editUser} />);
   };
+
+  useEffect(() => {
+    // Search the user by name and email without api call
+    if (!searchQuery) return;
+
+    const searchResults = userData.filter((user) => {
+      const fullName = `${user.first_name} ${user.last_name}`.toLowerCase();
+      return fullName.includes(searchQuery.toLowerCase()) || user.email.includes(searchQuery.toLowerCase());
+    });
+
+    queryClient.setQueryData<ApiBaseResponseType<UserListType[]>>(["userData", currentPage], (oldData: any) => {
+      if (!oldData) return null;
+
+      return {
+        ...oldData,
+        data: searchResults,
+        total: searchResults.length,
+      };
+    });
+
+  }, [searchQuery]);
+
+  const handleTypeSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if(e.target.value === ""){
+      refetch();
+    }
+    setSearchQuery(e.target.value);
+  }
+
   return (
     <div className="m-4 overflow-hidden">
       <div className="flex justify-end gap-2">
@@ -110,6 +158,7 @@ export default function Home() {
           type="email"
           placeholder="Search User"
           className="w-1/3 focus:bg-transparent"
+          onChange={handleTypeSearch}
         />
         <Button onClick={handleOpenAddUserModal}>Add New User</Button>
       </div>
@@ -125,7 +174,6 @@ export default function Home() {
             setCurrentPage={setCurrentPage}
             totalData={totalData}
             limit={data?.data.length as number}
-            setLimit={setLimit}
           />
         </Fragment>
       )}

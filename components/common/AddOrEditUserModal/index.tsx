@@ -23,6 +23,7 @@ type Props = {
   type: ModalContentEnum;
   addUser?: (payload: UserListType) => void;
   userObj?: UserListType;
+  editUser?: (payload: UserListType) => void;
 };
 
 const ManageUserModal = (props: Props) => {
@@ -36,7 +37,11 @@ const ManageUserModal = (props: Props) => {
   });
 
   const onSubmit: SubmitHandler<any> = async (data) => {
+   if(type === ModalContentEnum.CREATE){
     await mutate(data);
+   }else{
+    await editMutate(data);
+   }
   };
 
   const { mutate, isLoading } = useMutation<any, any, any>(
@@ -49,6 +54,20 @@ const ManageUserModal = (props: Props) => {
       },
       onError: (error) => {
         toast("Failed to add user");
+      },
+    }
+  );
+
+  const { mutate: editMutate, isLoading: isEditLoading } = useMutation<any, any, any>(
+    (data) => userServices.updateUser(data, props.userObj?.id as string), // API call for creating leave
+    {
+      onSuccess: (data: UserListType) => {
+        props.editUser && props.editUser({ ...data, id: props.userObj?.id as string });
+        toast("User edited successfully");
+        closeModal();
+      },
+      onError: (error) => {
+        toast("Failed to edit user");
       },
     }
   );

@@ -21,6 +21,13 @@ class UserServices {
     const { data } = await axiosInstance.delete<ApiBaseResponseType<UserListType>>(`/users/${id}`);
     return data;
   }
+
+
+  public async updateUser(data: CreateUserPayloadType, id: string): Promise<ApiBaseResponseType<UserListType>> {
+    const { data: responseData } = await axiosInstance.patch<ApiBaseResponseType<UserListType>>(`/users/${id}`, data);
+    return responseData;
+  }
+  
 }
 
 const userServices = new UserServices();
